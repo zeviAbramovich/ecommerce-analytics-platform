@@ -1,0 +1,129 @@
+# Maven
+target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Spring Boot
+spring-boot-*.log
+application-*.properties
+application-*.yml
+!application.properties
+!application.yml
+!application-example.properties
+!application-example.yml
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# VS Code (in case teammates use it)
+.vscode/
+*.code-workspace
+
+# Eclipse (in case teammates use it)
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+.docker/
+*.env.local
+.env
+!.env.example
+
+# Logs
+logs/
+*.log
+*.log.*
+/log/
+/logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Security
+*.key
+*.pem
+*.p12
+*.jks
+secrets/
+.secrets
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+h2/
+
+# Test coverage
+jacoco.exec
+.coverage/
+coverage/
+
+# Gradle (if you ever switch)
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Node.js (if you add frontend tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backup files
+*.bak
+*.backup
