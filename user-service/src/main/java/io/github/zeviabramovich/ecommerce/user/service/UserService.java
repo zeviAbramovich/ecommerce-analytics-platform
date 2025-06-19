@@ -31,7 +31,6 @@ public class UserService {
     public UserInfo registerUser(RegisterRequest request) {
         log.info("Attempting to register user with email: {}", request.getEmail());
 
-        // בדיקה שהאימייל לא קיים
         if (userRepository.existsByEmail(request.getEmail())) {
             log.warn("Registration failed - email already exists: {}", request.getEmail());
             throw new UserAlreadyExistsException("Email already registered: " + request.getEmail());
@@ -240,6 +239,38 @@ public class UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> UserNotFoundException.byEmail("User not found with email: " + email));
+    }
+
+    @Cacheable(value = "active-users")
+    public List<UserInfo> getAllUsers() {
+        log.debug("Fetching all users");
+        return userRepository.findAll()
+                .stream()
+                .map(this::mapToUserInfo)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @CacheEvict(value = {"user-profiles", "active-users"}, key = "#userId")
+    public void updateUserStatus(String userId, boolean active) {
+        log.info("Updating user status: {} to {}", userId, active);
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.byUserId("User not found: " + userId));
+
+        if (user.getIsActive() == active) {
+            log.warn("User already in requested state: {}", userId);
+            throw new IllegalStateException("User is already " + (active ? "active" : "deactivated"));
+        }
+
+        if (active) {
+            user.activate();
+        } else {
+            user.deactivate();
+        }
+        
+        userRepository.save(user);
+        log.info("User status updated successfully: {}", userId);
     }
 
     private UserInfo mapToUserInfo(User user) {

@@ -1,0 +1,229 @@
+# user-service/src/main/resources/application.yml
+# Spring Boot Configuration for User Service
+
+# Server Configuration
+server:
+  port: 8081
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Spring Configuration
+spring:
+  application:
+    name: user-service
+
+  # Profile Selection (overridden by environment)
+  profiles:
+    active: local
+
+  # JPA/Hibernate Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Creates tables from entities
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+    open-in-view: false  # Performance best practice
+
+  # Jackson JSON Configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+
+# Management & Monitoring (Actuator)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+# Application Specific Configuration
+app:
+  jwt:
+    secret: ${JWT_SECRET:MyDefaultSecretKeyThatShouldBeChangedInProduction123456789ABCDEF}
+    expiration-hours: ${JWT_EXPIRATION_HOURS:24}
+    issuer: ${JWT_ISSUER:ecommerce-platform}
+
+  cache:
+    default-ttl: 3600  # 1 hour in seconds
+    user-profile-ttl: 1800  # 30 minutes
+    active-users-ttl: 600   # 10 minutes
+
+# Logging Configuration
+logging:
+  level:
+    io.github.zeviabramovich: INFO
+    org.springframework.security: WARN
+    org.springframework.cache: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+---
+# =================================
+# LOCAL DEVELOPMENT PROFILE
+# =================================
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  # Local Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user_db
+    username: ${POSTGRES_USER:ecommerce_user}
+    password: ${POSTGRES_PASSWORD:DemoPassword123!}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      maximum-pool-size: 10
+      minimum-idle: 5
+
+  # Local Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:DemoRedisPass456!}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: -1ms
+
+  # Local Kafka Configuration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: user-service-local
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "io.github.zeviabramovich.ecommerce"
+
+# Local Development Logging
+logging:
+  level:
+    io.github.zeviabramovich: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+
+---
+# =================================
+# DOCKER PROFILE
+# =================================
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  # Docker Database Configuration
+  datasource:
+    url: jdbc:postgresql://postgres:5432/user_db
+    username: ${POSTGRES_USER:ecommerce_user}
+    password: ${POSTGRES_PASSWORD:DemoPassword123!}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      maximum-pool-size: 20
+      minimum-idle: 10
+
+  # Docker Redis Configuration
+  data:
+    redis:
+      host: redis
+      port: 6379
+      password: ${REDIS_PASSWORD:DemoRedisPass456!}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 30
+          max-idle: 15
+          min-idle: 5
+          max-wait: -1ms
+
+  # Docker Kafka Configuration
+  kafka:
+    bootstrap-servers: kafka:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      group-id: user-service-docker
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "io.github.zeviabramovich.ecommerce"
+
+---
+# =================================
+# TEST PROFILE
+# =================================
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  # H2 In-Memory Database for Tests
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  # Test Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6370  # Different port for tests
+
+# Test-specific JWT settings
+app:
+  jwt:
+    secret: TestSecretKeyForJWTTokenGeneration123456789ABCDEF
+    expiration-hours: 1
+    issuer: ecommerce-test
+
+# Test Logging
+logging:
+  level:
+    io.github.zeviabramovich: DEBUG
+    org.springframework.security: WARN
