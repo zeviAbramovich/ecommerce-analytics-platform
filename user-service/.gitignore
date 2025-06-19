@@ -1,0 +1,29 @@
+# Ignore application.yml configuration file
+/src/main/resources/application.yml
+
+# Maven/Java build output
+/target/
+
+# IDE files
+/.idea/
+*.iml
+*.ipr
+*.iws
+/.project
+/.classpath
+/.settings/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# Other common ignores
+*.swp
+*.swo 

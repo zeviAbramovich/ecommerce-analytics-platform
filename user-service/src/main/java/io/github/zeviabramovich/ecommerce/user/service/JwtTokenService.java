@@ -27,7 +27,7 @@ public class JwtTokenService {
     @Value("${app.jwt.issuer:ecommerce-platform}")
     private String issuer;
 
-    public JwtTokenService(@Value("${app.jwt.secret:MyDefaultSecretKeyThatShouldBeChangedInProduction123456789}") String secret) {
+    public JwtTokenService(@Value("${app.jwt.secret:CHANGE_ME_TO_A_SECURE_SECRET}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         log.info("JWT Token Service initialized with expiration: {} hours", expirationHours);
     }
@@ -45,21 +45,18 @@ public class JwtTokenService {
         return createToken(claims, user.getUserId());
     }
 
-    /**
-     * יצירת token עם claims מותאמים אישית
-     */
     private String createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + (expirationHours * 60 * 60 * 1000));
 
         String token = Jwts.builder()
-                .claims(claims)                    // המידע שנשמר בtoken
-                .subject(subject)                  // המשתמש (userId)
-                .issuer(issuer)                    // מי יצר את הtoken
-                .issuedAt(now)                     // מתי נוצר
-                .expiration(expiryDate)            // מתי פג תוקף
-                .signWith(secretKey)               // חתימה עם הsecret key
-                .compact();                        // המרה לstring
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuer(issuer)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(secretKey)
+                .compact();
 
         log.debug("Token created for subject: {}, expires at: {}", subject, expiryDate);
         return token;
@@ -84,11 +81,11 @@ public class JwtTokenService {
 
     private Claims getAllClaimsFromToken(String token) {
         try {
-            return Jwts.parser()
-                    .verifyWith(secretKey)         // וידוא החתימה
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
                     .build()
-                    .parseSignedClaims(token)      // פיענוח הtoken
-                    .getPayload();                 // קבלת הנתונים
+                    .parseClaimsJws(token)
+                    .getBody();
         } catch (JwtException e) {
             log.warn("Failed to parse JWT token: {}", e.getMessage());
             throw new IllegalArgumentException("Invalid JWT token", e);
@@ -117,7 +114,7 @@ public class JwtTokenService {
 
     public Boolean isValidToken(String token) {
         try {
-            getAllClaimsFromToken(token); // אם זה לא זורק exception, הtoken תקף
+            getAllClaimsFromToken(token);
             return !isTokenExpired(token);
         } catch (Exception e) {
             log.debug("Token validation failed: {}", e.getMessage());
@@ -133,7 +130,7 @@ public class JwtTokenService {
     }
 
     public Long getExpirationTime() {
-        return expirationHours * 60 * 60; // המרה לשניות
+        return expirationHours * 60 * 60;
     }
 
     public String generateRefreshToken(User user) {
@@ -147,11 +144,11 @@ public class JwtTokenService {
         Date expiryDate = new Date(now.getTime() + (expirationHours * 7 * 24 * 60 * 60 * 1000)); // 7 ימים
 
         return Jwts.builder()
-                .claims(claims)
-                .subject(user.getUserId())
-                .issuer(issuer)
-                .issuedAt(now)
-                .expiration(expiryDate)
+                .setClaims(claims)
+                .setSubject(user.getUserId())
+                .setIssuer(issuer)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
                 .signWith(secretKey)
                 .compact();
     }
